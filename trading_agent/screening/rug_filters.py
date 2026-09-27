@@ -30,6 +30,7 @@ class TokenSnapshot:
     closes: list[float] = field(default_factory=list)
     mint_authority_revoked: bool | None = None
     freeze_authority_revoked: bool | None = None
+    description: str = ""  # promo text; judged by Jev in the CLI, not here
 
 
 @dataclass

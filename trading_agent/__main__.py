@@ -9,6 +9,7 @@ from . import data as data_mod
 from .backtest import run
 from .config import Params
 from .metrics import equity_stats, format_stats, summarize, yearly_returns
+from .jev_gate import promo_risk
 from .paper import paper_step
 from .screening.rug_filters import Holder, TokenSnapshot, screen
 
@@ -54,7 +55,7 @@ def cmd_ablate(args):
 
 
 def cmd_paper(args):
-    snapshot = paper_step(Params(), state_dir=Path(args.state_dir), start=args.start)
+    snapshot = paper_step(Params(), state_dir=Path(args.state_dir), start=args.start, use_jev=not args.no_jev)
     print(json.dumps(snapshot, indent=2, default=str))
 
 
@@ -64,8 +65,13 @@ def cmd_screen(args):
     for t in tokens:
         t["holders"] = [Holder(**h) for h in t.get("holders", [])]
         res = screen(TokenSnapshot(**t))
-        print(f"{res.symbol}: {'PASSED screen (not a buy signal)' if res.passed else 'AVOID'}")
-        for flag in res.flags:
+        flags = list(res.flags)
+        if not args.no_jev and t.get("description"):
+            judged = promo_risk(t["description"])
+            flags += judged["flags"] if judged else ["(Jev unavailable: promo text not judged)"]
+        failed = [f for f in flags if not f.startswith("(")]
+        print(f"{res.symbol}: {'AVOID' if failed else 'PASSED screen (not a buy signal)'}")
+        for flag in flags:
             print(f"  - {flag}")
 
 
@@ -89,10 +95,12 @@ def main(argv=None):
     pp = sub.add_parser("paper", help="forward-test on live prices; run once a day")
     pp.add_argument("--start", help="paper start date (first run only), default today")
     pp.add_argument("--state-dir", default="paper_state")
+    pp.add_argument("--no-jev", action="store_true", help="skip the Jev order review")
     pp.set_defaults(func=cmd_paper)
 
     sc = sub.add_parser("screen", help="rug-risk screen for memecoin snapshots (JSON)")
     sc.add_argument("token_file")
+    sc.add_argument("--no-jev", action="store_true", help="skip Jev's judgement of promo text")
     sc.set_defaults(func=cmd_screen)
 
     args = parser.parse_args(argv)

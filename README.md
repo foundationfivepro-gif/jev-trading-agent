@@ -47,6 +47,13 @@ and BTC is above its 200-day MA. Size each trade so hitting a 3-ATR stop loses
 when the 20-day MA drops below the 100-day. New entries pause for 30 days after a
 25% drawdown.
 
+## Jev decision gate
+
+Every paper order passes hard rules in code, then TypeSafe Jev (via the Vercel
+AI Gateway) judges it against a plain-English trading policy: `allow`, `review`
+or `block`, failing closed. The screen also has Jev judge each token's promo
+text. See [JEV.md](JEV.md).
+
 ## Settings
 
 All parameters are in `trading_agent/config.py`. The one to consider changing
