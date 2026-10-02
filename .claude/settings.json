@@ -1,0 +1,78 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/jev-cloud.sh\" session",
+            "timeout": 300,
+            "statusMessage": "jev: activating hooks"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/jev-cloud.sh\" prompt",
+            "timeout": 30,
+            "statusMessage": "jev: evaluating prompt"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/jev-cloud.sh\" gate-bash",
+            "timeout": 30,
+            "statusMessage": "jev: gating command"
+          }
+        ]
+      },
+      {
+        "matcher": "Agent|Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/jev-cloud.sh\" route-agent",
+            "timeout": 30,
+            "statusMessage": "jev: routing subagent"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Agent|Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/jev-cloud.sh\" agent-outcome",
+            "timeout": 30,
+            "statusMessage": "jev: recording outcome"
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "Agent|Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/jev-cloud.sh\" agent-outcome",
+            "timeout": 30,
+            "statusMessage": "jev: recording outcome"
+          }
+        ]
+      }
+    ]
+  }
+}
